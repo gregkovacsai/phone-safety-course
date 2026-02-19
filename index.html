@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Elli's Phone Safety Guide</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0f0e17;--surface:#1a1a2e;--surface2:#16213e;--text:#fffffe;--text-dim:#a7a9be;
+--accent:#7f5af0;--accent2:#2cb67d;--gradient:linear-gradient(135deg,#7f5af0,#2cb67d);
+--pink:#e056a0;--warn:#ff6b6b;--blue:#72b4eb;
+}
+html,body{height:100%;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow:hidden;-webkit-tap-highlight-color:transparent}
+
+/* Progress bar */
+#progress{position:fixed;top:0;left:0;height:4px;background:var(--gradient);z-index:1000;transition:width .3s ease}
+
+/* Slide container */
+#deck{position:relative;width:100%;height:100%;overflow:hidden}
+.slide{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px 40px 80px;text-align:center;opacity:0;pointer-events:none;transition:opacity .4s ease,transform .4s ease;transform:translateX(60px)}
+.slide.active{opacity:1;pointer-events:auto;transform:translateX(0)}
+.slide.prev{opacity:0;transform:translateX(-60px)}
+
+/* Typography */
+h1{font-size:clamp(2.4rem,6.5vw,4rem);font-weight:800;margin-bottom:.5em;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2}
+h2{font-size:clamp(1.8rem,5vw,3rem);font-weight:700;margin-bottom:.5em;color:var(--text)}
+h3{font-size:clamp(1.4rem,3.5vw,2rem);font-weight:600;color:var(--accent);margin-bottom:.4em}
+p,.item{font-size:clamp(1.2rem,3vw,1.6rem);line-height:1.7;color:var(--text-dim);max-width:750px;margin:0 auto}
+.big-emoji{font-size:clamp(3.5rem,12vw,6rem);margin-bottom:.3em;display:block}
+.emoji-row{font-size:3rem;margin:.3em 0;letter-spacing:.3em}
+
+/* Module header */
+.module-header{display:inline-block;background:var(--gradient);color:#fff;padding:8px 22px;border-radius:20px;font-size:1.05rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:1em}
+
+/* Items list */
+.items{text-align:left;max-width:600px;margin:0 auto}
+.item{padding:10px 0 10px 0;font-size:clamp(1.15rem,2.8vw,1.5rem);display:flex;align-items:flex-start;gap:14px}
+.item span.icon{flex-shrink:0;font-size:1.5em;line-height:1.3}
+
+/* Callout boxes */
+.callout{background:var(--surface);border-left:4px solid var(--accent);border-radius:12px;padding:24px 28px;margin:18px auto;max-width:700px;text-align:left}
+.callout.warn{border-left-color:var(--warn)}
+.callout.green{border-left-color:var(--accent2)}
+.callout-label{font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.callout-label.rt{color:var(--pink)}
+.callout-label.warn{color:var(--warn)}
+.callout-label.tip{color:var(--accent2)}
+.callout p{font-size:clamp(1.1rem,2.5vw,1.35rem);margin:0}
+
+/* Discussion prompt */
+.discussion{background:linear-gradient(135deg,rgba(127,90,240,.15),rgba(44,182,125,.15));border:2px solid rgba(127,90,240,.3);border-radius:16px;padding:32px 36px;margin:14px auto;max-width:700px}
+.discussion h3{color:var(--accent);margin-bottom:.5em;font-size:1.6rem}
+.discussion p{color:var(--text);font-size:clamp(1.2rem,3vw,1.5rem)}
+
+/* Quiz */
+.quiz-q{background:var(--surface);border-radius:16px;padding:24px 28px;margin:12px auto;max-width:620px;text-align:left;cursor:pointer;border:2px solid transparent;transition:border-color .3s}
+.quiz-q:hover{border-color:var(--accent)}
+.quiz-q .q-text{font-weight:600;font-size:clamp(1.2rem,3vw,1.45rem);margin-bottom:10px}
+.quiz-q .q-options{list-style:none;padding:0}
+.quiz-q .q-options li{padding:7px 0;color:var(--text-dim);font-size:clamp(1.05rem,2.5vw,1.3rem)}
+.quiz-q .q-options li::before{content:'○ ';color:var(--accent)}
+.quiz-q .answer{display:none;margin-top:12px;padding:14px 18px;background:rgba(44,182,125,.15);border-radius:10px;color:var(--accent2);font-weight:600;font-size:clamp(1.05rem,2.5vw,1.3rem)}
+.quiz-q.revealed .answer{display:block}
+.quiz-q.revealed .q-options li.correct{color:var(--accent2);font-weight:700}
+.quiz-q.revealed .q-options li.correct::before{content:'● '}
+
+/* Navigation */
+#nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:16px 24px;background:linear-gradient(transparent,var(--bg) 40%);z-index:100}
+.nav-btn{width:52px;height:52px;border-radius:50%;border:2px solid rgba(127,90,240,.4);background:var(--surface);color:var(--text);font-size:1.4rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.nav-btn:hover{background:var(--accent);border-color:var(--accent)}
+.nav-btn:disabled{opacity:.3;cursor:default;background:var(--surface)}
+#slide-num{color:var(--text-dim);font-size:.85rem;font-variant-numeric:tabular-nums}
+
+/* Stat block */
+.stat{font-size:clamp(3rem,10vw,5rem);font-weight:800;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:.2em 0}
+
+/* Scrollable slide content */
+.slide-inner{max-height:calc(100vh - 140px);overflow-y:auto;width:100%;display:flex;flex-direction:column;align-items:center;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--accent) transparent;padding:0 4px}
+.slide-inner::-webkit-scrollbar{width:4px}
+.slide-inner::-webkit-scrollbar-thumb{background:var(--accent);border-radius:4px}
+
+/* Agreement checkboxes */
+.agreement{text-align:left;max-width:600px;margin:0 auto}
+.agreement label{display:flex;align-items:flex-start;gap:14px;padding:10px 0;font-size:clamp(1.1rem,2.5vw,1.3rem);color:var(--text-dim);cursor:pointer}
+.agreement input[type=checkbox]{accent-color:var(--accent);width:20px;height:20px;flex-shrink:0;margin-top:3px}
+
+/* Mobile tweaks */
+@media(max-width:600px){
+.slide{padding:50px 20px 80px}
+.callout,.discussion,.quiz-q{padding:16px 18px;margin:10px 16px}
+.items{padding:0 8px}
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="deck"></div>
+<div id="nav">
+  <button class="nav-btn" id="prev-btn" onclick="go(-1)">‹</button>
+  <span id="slide-num"></span>
+  <button class="nav-btn" id="next-btn" onclick="go(1)">›</button>
+</div>
+
+<script>
+const slides = [];
+function S(html){ slides.push(html); }
+function mod(label){ return `<div class="module-header">${label}</div>`; }
+function items(arr){ return '<div class="items">'+arr.map(([icon,txt])=>`<div class="item"><span class="icon">${icon}</span><span>${txt}</span></div>`).join('')+'</div>'; }
+function callout(type,label,text){ return `<div class="callout ${type}"><div class="callout-label ${type}">${label}</div><p>${text}</p></div>`; }
+function discuss(question){ return `<div class="discussion"><h3>💬 Discussion Prompt</h3><p>${question}</p></div>`; }
+function quiz(id,question,options,correctIdx,explanation){
+  let opts = options.map((o,i)=>`<li class="${i===correctIdx?'correct':''}">${o}</li>`).join('');
+  return `<div class="quiz-q" onclick="this.classList.toggle('revealed')"><div class="q-text">${question}</div><ul class="q-options">${opts}</ul><div class="answer">✅ ${explanation}</div></div>`;
+}
+
+// ===== MODULE 1: WELCOME =====
+S(`<div class="slide-inner"><span class="big-emoji">📱</span><h1>Welcome, Elli!</h1><p style="font-size:clamp(1.1rem,3vw,1.5rem);color:var(--text)">Your Personal Guide to Being<br>Smart, Safe & In Control</p><p style="margin-top:1em;color:var(--text-dim)">Made just for you, with love from Mom & Dad &nbsp;❤️</p></div>`);
+
+S(`<div class="slide-inner">${mod('Module 1 — Welcome')}<span class="big-emoji">🎉</span><h2>First Things First, Elli</h2><p>Getting your own phone is a <strong style="color:var(--accent)">big deal</strong>. This course isn't a punishment — it's your <strong style="color:var(--accent2)">preparation</strong>.</p><p style="margin-top:.8em">Think of it like getting a driver's license. You wouldn't just hop in a car without learning the rules, right?</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">💪</span><h2>We Trust You, Elli</h2><p>The fact that you're getting a phone means your parents believe you're <strong style="color:var(--accent2)">ready for more responsibility</strong>.</p><p style="margin-top:.8em">This course is about giving you the <strong style="color:var(--accent)">knowledge and tools</strong> to handle it like a boss.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">⚖️</span><h2>What a Phone Really Means</h2>${items([
+['🌍','Access to the entire world — the good AND the bad'],
+['🗣️','A direct line to anyone, anywhere, anytime'],
+['📸','A camera that can capture (and share) anything'],
+['🧠','A tool that can make your life better — or worse'],
+['💡','It all depends on how YOU use it']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🎯</span><h2>What You'll Learn Today</h2>${items([
+['🔧','Building healthy tech habits'],
+['🛡️','Spotting scams and staying safe from predators'],
+['🔒','Protecting your personal information'],
+['🧠','Protecting your mental health'],
+['🤖','Navigating AI smartly'],
+['📊','Outsmarting the algorithm'],
+['📱','Social media — the real talk'],
+['🌟','Using your phone to level up your life']
+])}</div>`);
+
+S(`<div class="slide-inner">${discuss("Before we start: Elli, what are you MOST excited about having your own phone? What (if anything) makes you nervous about it?")}</div>`);
+
+// ===== MODULE 2: TECH HABITS =====
+S(`<div class="slide-inner">${mod('Module 2 — Tech Habits')}<span class="big-emoji">⏰</span><h1>Building Tech Habits That Stick</h1><p>You control the phone.<br>The phone does NOT control you.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">📊</span><h2>Screen Time Awareness</h2><p>The average teen spends <strong style="color:var(--warn)">7+ hours per day</strong> on screens (outside of school).</p><div class="stat">7 hrs/day</div><p>That's almost a full-time job! Being aware of your usage is the first step to staying in control.</p></div>`);
+
+S(`<div class="slide-inner"><h2>⏱️ Set Your Own Boundaries</h2>${items([
+['📱','Use Screen Time / Digital Wellbeing to track your usage'],
+['⏰','Set daily app limits (especially TikTok and YouTube — they\'re time machines!)'],
+['🎯','Ask yourself: "Am I using my phone on purpose, or just because I\'m bored?"'],
+['📝','Try a "screen time journal" for the first week — you\'ll be surprised!']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🔔</span><h2>Tame Your Notifications</h2><p>Every buzz, ding, and banner is <strong style="color:var(--warn)">designed to pull you back in</strong>.</p>${items([
+['🔇','Turn off notifications for most apps'],
+['⭐','Only keep notifications for calls, texts from family, and essentials'],
+['🧘','Try "Do Not Disturb" mode during homework and meals'],
+['💡','YOU decide when to check your phone — not the app']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">😴</span><h2>Sleep Hygiene</h2><p>Blue light and late-night scrolling wreck your sleep — and sleep is <strong style="color:var(--accent2)">everything</strong> at your age.</p>${items([
+['🚫','No phone in your bedroom at night'],
+['🔌','Phone charges in the kitchen/living room overnight'],
+['⏰','Screen curfew: 1 hour before bed'],
+['😌','Your brain needs downtime to process the day']
+])}${callout('rt','Real Talk','Studies show teens who keep phones in their bedroom get 30 minutes LESS sleep per night on average. Over a year, that\'s 180 hours of lost sleep.')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🃏</span><h2>The Phone Stack Game</h2><p>When hanging out with friends or family:</p>${items([
+['📱','Everyone stacks their phones in the middle of the table'],
+['🚫','First person to grab their phone loses (pays for dessert, does a dare, etc.)'],
+['🤝','It\'s about being PRESENT with the people in front of you']
+])}<p style="margin-top:.8em;color:var(--accent)">The people in front of you always matter more than the people on your screen.</p></div>`);
+
+S(`<div class="slide-inner"><h2>📵 Phone-Free Zones & Times</h2>${items([
+['🍽️','Meals — always phone-free'],
+['📚','Homework time — phone in another room'],
+['🛏️','Bedroom at night'],
+['⛪','Family events, ceremonies, gatherings'],
+['🚗','Car rides (try talking instead!)']
+])}${callout('tip','Pro Tip','Making these habits now means they\'ll feel natural forever. It\'s way harder to break bad habits than to build good ones from the start.')}</div>`);
+
+S(`<div class="slide-inner">${discuss("Elli, what phone-free zones and times make sense for your family? Discuss and agree on at least 3 together.")}</div>`);
+
+// ===== MODULE 3: SCAMS & PREDATORS =====
+S(`<div class="slide-inner">${mod('Module 3 — Safety')}<span class="big-emoji">🛡️</span><h1>Watching Out for Scams & Predators</h1><p>This is the most important module.<br>Please take it seriously, Elli.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🎣</span><h2>How Scams Work</h2><p>Scammers use <strong style="color:var(--warn)">psychological tricks</strong> to get you to act without thinking:</p>${items([
+['⏰','<strong>Urgency</strong> — "Act NOW or lose your account!"'],
+['🎁','<strong>Too good to be true</strong> — "You won a free iPhone!"'],
+['😨','<strong>Fear</strong> — "Your account has been hacked!"'],
+['❤️','<strong>Emotion</strong> — "Help this sick puppy!"'],
+['🎭','<strong>Impersonation</strong> — pretending to be a friend, company, or authority']
+])}</div>`);
+
+S(`<div class="slide-inner"><h2>🎯 Scams Targeting Teens</h2>${callout('warn','Fake Giveaway','You see a TikTok or Instagram post: "🎉 FREE iPhone! Just follow, like, share, and enter your email + address!" — This is ALWAYS a scam. Real companies don\'t ask for your personal info through random posts.')}${callout('warn','Phishing Text','"Your Snapchat account will be deleted in 24 hours. Click here to verify: snap-verify-login.com" — Fake link. Real Snapchat would never text you this. When in doubt, open the actual app.')}${callout('warn','Cash App Flip','"Send me $50 and I\'ll flip it to $500 with this money hack!" — Nobody can magically multiply money. This is theft with extra steps.')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">⚠️</span><h2>Online Predators</h2><p>This is uncomfortable but <strong style="color:var(--warn)">critically important</strong>.</p><p style="margin-top:.6em">Predators are adults who try to build relationships with young people online in order to exploit them. They are <strong>very good</strong> at what they do.</p><p style="margin-top:.6em;color:var(--accent)">They don't look like villains. They seem friendly, understanding, and cool.</p></div>`);
+
+S(`<div class="slide-inner"><h2>🎭 How Grooming Works</h2><p style="margin-bottom:.6em">Grooming is a step-by-step process. It usually looks like this:</p>${items([
+['1️⃣','<strong>Targeting</strong> — They find someone who seems lonely, insecure, or seeking attention'],
+['2️⃣','<strong>Building trust</strong> — "You\'re so mature for your age" / "I totally get you"'],
+['3️⃣','<strong>Filling a need</strong> — Compliments, gifts, attention, "understanding"'],
+['4️⃣','<strong>Isolating</strong> — "Don\'t tell your parents, they wouldn\'t understand"'],
+['5️⃣','<strong>Desensitizing</strong> — Gradually introducing inappropriate topics'],
+['6️⃣','<strong>Exploiting</strong> — Asking for photos, meetups, or favors']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🚩</span><h2>Red Flags in Online Conversations</h2>${items([
+['🚩','They ask you to keep the friendship a secret'],
+['🚩','They say "you\'re so mature for your age"'],
+['🚩','They ask personal questions quickly (where you live, what school)'],
+['🚩','They send you gifts or offer money'],
+['🚩','They try to move the conversation to a private platform'],
+['🚩','They ask for photos (especially selfies)'],
+['🚩','They get upset or guilt-trip you if you say no'],
+['🚩','They claim to be a teen but something feels "off"']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🔐</span><h2>NEVER Share These Online</h2><div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:.8em 0">${['🏠 Home address','🏫 School name','📍 Current location','📸 Personal photos','📞 Phone number','👤 Full name','🎂 Birthday','🔑 Passwords'].map(t=>`<div style="background:var(--surface);padding:10px 18px;border-radius:10px;font-size:clamp(.85rem,2vw,1rem);border:1px solid rgba(255,107,107,.3)">${t}</div>`).join('')}</div><p style="margin-top:.5em">Not with strangers. Not with online friends. Not in games. <strong style="color:var(--warn)">Not ever.</strong></p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🆘</span><h2>If Something Feels Wrong...</h2><div class="callout green"><div class="callout-label tip">THE #1 RULE</div><p style="font-size:clamp(1.1rem,3vw,1.4rem);color:var(--text);font-weight:700">Tell a parent IMMEDIATELY.</p><p style="margin-top:.5em;font-size:clamp(.95rem,2vw,1.1rem)">You will <strong style="color:var(--accent2)">NOT</strong> be in trouble. Not now, not ever. Even if you think you did something wrong. Even if someone told you not to tell. Even if you're embarrassed.</p><p style="margin-top:.5em;font-size:clamp(.95rem,2vw,1.1rem)">Elli, Mom and Dad are ALWAYS on your team. 💚</p></div></div>`);
+
+S(`<div class="slide-inner">${callout('rt','Real Talk Scenario','You\'re playing an online game and someone who says they\'re 14 starts chatting with you. They\'re really nice and funny. After a week, they ask what school you go to and if you want to video call — but ask you not to tell your parents because "they might not let us be friends."')}<p style="margin-top:1em;font-size:clamp(1rem,2.5vw,1.2rem)"><strong style="color:var(--warn)">Every single thing about this is a red flag.</strong> A real friend would never ask you to hide the friendship.</p></div>`);
+
+// --- EXPLICIT CONTENT SECTION (within Module 3) ---
+S(`<div class="slide-inner">${mod('Module 3 — Safety')}<span class="big-emoji">🔞</span><h2>Explicit Content Online</h2><p>Elli, this is an awkward topic but an important one. <strong style="color:var(--warn)">Pornography and explicit content exist all over the internet</strong> — and it can show up even when you're not looking for it.</p><p style="margin-top:.6em">Pop-up ads, links in group chats, search results, social media — it can appear <strong>unexpectedly</strong> on almost any platform.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🚫</span><h2>Why This Content Is Harmful</h2><p>Explicit content isn't just "not for kids." It creates real problems:</p>${items([
+['🧠','It creates <strong style="color:var(--warn)">unrealistic and harmful expectations</strong> about relationships and bodies'],
+['💔','It can warp your understanding of what healthy relationships look like'],
+['😰','It can make you feel confused, uncomfortable, or anxious'],
+['📱','It\'s designed for adults and does NOT reflect real life — not even close'],
+['🌱','Your brain is still developing, and this kind of content can genuinely affect how you see yourself and others']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🛑</span><h2>If You Accidentally See Something</h2><p>Here's exactly what to do:</p>${items([
+['❌','<strong>Close it immediately</strong> — don\'t keep looking out of curiosity'],
+['🗣️','<strong>Tell Mom or Dad</strong> — you will NOT be in trouble, we promise'],
+['💚','<strong>No shame</strong> — accidentally seeing something doesn\'t mean you did anything wrong'],
+['🚫','<strong>Don\'t share it</strong> — sharing explicit content involving minors is actually illegal'],
+['🔍','<strong>Don\'t go looking for more</strong> — curiosity is normal, but this content is genuinely harmful']
+])}${callout('green','Remember','Seeing something explicit by accident is NOT your fault. It happens to almost everyone online. What matters is what you do next — and telling a parent is always the right call.')}</div>`);
+
+S(`<div class="slide-inner"><h2>⚠️ Where Explicit Content Can Appear</h2><p>It's not just on "bad" websites. It can show up on:</p>${items([
+['💬','Group chats and DMs (people send links or images)'],
+['🔍','Search engines and image searches (even innocent searches)'],
+['📱','Social media feeds — TikTok, YouTube, even Pinterest can surface suggestive content'],
+['🎮','Online games and gaming chat platforms'],
+['📺','Streaming sites with inadequate age filters'],
+['💻','Pop-up ads on free websites']
+])}<p style="margin-top:.5em;color:var(--accent)">Being aware of where it can appear helps you be prepared if it does.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🛡️</span><h2>Parental Controls Are on Your Side</h2><p>Elli, the parental controls on your devices are there to <strong style="color:var(--accent2)">help you, not spy on you</strong>.</p>${items([
+['🔒','They filter out content that no kid should have to see'],
+['💚','They\'re like a seatbelt — a safety tool, not a punishment'],
+['🤝','As you get older and show responsibility, settings can be adjusted together'],
+['🗣️','If a control blocks something you actually need for school or a project, just ask — we\'ll work it out']
+])}${callout('tip','The Big Picture','We\'re not trying to control your every move. We\'re trying to make sure you don\'t stumble into stuff that could genuinely hurt you while you\'re still growing up. That\'s our job as parents. 💚')}</div>`);
+
+S(`<div class="slide-inner">${discuss("Elli, have you ever encountered anything online that made you uncomfortable? What would you do if an online stranger asked you to keep a secret from us? And remember — if you ever see something explicit, you can always come to us without any judgment.")}</div>`);
+
+// ===== MODULE 4: PERSONAL INFO =====
+S(`<div class="slide-inner">${mod('Module 4 — Privacy')}<span class="big-emoji">🔒</span><h1>Protecting Your Personal Information</h1><p>Your data is valuable.<br>Treat it like treasure, Elli.</p></div>`);
+
+S(`<div class="slide-inner"><h2>💎 What Counts as Personal Info?</h2>${items([
+['👤','Full name, birthday, age'],
+['🏠','Address, phone number, email'],
+['🏫','School name, team/club names'],
+['📸','Photos of yourself, your home, your ID'],
+['📍','Location data (where you are right now)'],
+['🔑','Passwords, security questions'],
+['💳','Financial info (even your parents\')'],
+['🧬','Health info, family details']
+])}<p style="margin-top:.5em;color:var(--accent)">If it can be used to find you, identify you, or impersonate you — protect it.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">⚙️</span><h2>Privacy Settings Matter</h2>${items([
+['🔒','Set ALL social media accounts to <strong>private</strong> — TikTok, Pinterest, YouTube, everything'],
+['📍','Turn off location sharing in apps (except with family)'],
+['📷','Disable camera/microphone access for apps that don\'t need it'],
+['🔍','Google yourself — see what\'s already out there'],
+['📋','Review app permissions regularly']
+])}${callout('tip','Pro Tip','When installing a new app, ask: "Does this app REALLY need access to my contacts and location?" If the permissions don\'t make sense, don\'t install it.')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🏷️</span><h2>"Free" Apps Aren't Free</h2><p>If you're not paying for the product...</p><div class="stat">YOU are the product</div><p>Free apps like TikTok, Pinterest, and YouTube make money by collecting your data and selling it to advertisers. Every tap, scroll, search, and like is tracked and monetized.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🔑</span><h2>Password Hygiene</h2>${items([
+['✅','Use <strong>long, unique passwords</strong> for every account (12+ characters)'],
+['✅','Mix uppercase, lowercase, numbers, and symbols'],
+['✅','Use a password manager (ask Mom/Dad to help set one up)'],
+['❌','NEVER use your name, birthday, or pet\'s name'],
+['❌','NEVER reuse passwords across sites'],
+['❌','NEVER share passwords with friends (even best friends)']
+])}${callout('tip','Easy Password Trick','Think of a sentence: "My cat Luna loves 3 treats at bedtime!" → McLl3t@b! — long, random, and easy for YOU to remember.')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">👣</span><h2>Your Digital Footprint</h2><p>Everything you post, like, comment, search for, or share online creates a <strong style="color:var(--accent)">permanent trail</strong>.</p>${items([
+['🏫','College admissions officers check social media'],
+['💼','Future employers will Google you'],
+['📸','Screenshots mean deleted posts aren\'t really deleted'],
+['⏰','Something you post at 13 can follow you at 30']
+])}<p style="margin-top:.5em;color:var(--warn)">The internet never forgets, Elli.</p></div>`);
+
+S(`<div class="slide-inner">${discuss("What's one thing you didn't realize counted as 'personal information' before today? How will you decide which apps to give permissions to?")}</div>`);
+
+// ===== MODULE 5: MENTAL HEALTH =====
+S(`<div class="slide-inner">${mod('Module 5 — Mental Health')}<span class="big-emoji">🧠</span><h1>Protecting Your Mental Health</h1><p>Your phone should make your life better.<br>If it's not, something needs to change.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🪞</span><h2>The Comparison Trap</h2><p>What you see on social media is a <strong style="color:var(--accent)">highlight reel</strong>, not real life.</p>${items([
+['📸','People post their best moments, not their bad days'],
+['✨','Filters, editing, and staging make everything look perfect'],
+['🎭','Even influencers have acne, bad hair days, and insecurities'],
+['💔','Comparing your behind-the-scenes to someone else\'s highlight reel is unfair to YOU']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">📌</span><h2>A Note About Pinterest</h2><p>Pinterest is generally a great app for inspiration and creativity, Elli. But there's a flip side:</p>${items([
+['🪞','Boards full of "perfect" bodies, rooms, outfits can create <strong style="color:var(--warn)">unrealistic standards</strong>'],
+['📊','The more you save certain types of content, the more it shows you — this can spiral'],
+['💚','<strong style="color:var(--accent2)">Curate intentionally</strong> — fill your boards with things that inspire YOU, not things that make you feel "not enough"'],
+['🎨','Use it for creative projects, book ideas, art inspiration — that\'s where Pinterest shines!']
+])}${callout('tip','Healthy Pinterest Habit','If you notice you\'re feeling bad about yourself after scrolling Pinterest, that\'s a sign to curate your boards differently. Unpin content that triggers comparison. Pin content that sparks JOY and creativity.')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🪞</span><h2>AI Face Filters — The Fun Lie</h2><p>Filters that change your face are everywhere. Fun — but they can mess with how you see yourself.</p>${items([
+['📸','TikTok, Snapchat, and Instagram filters change how you look in real-time'],
+['🧠','Using them constantly can make your REAL face feel "wrong" — called <strong style="color:var(--warn)">"Snapchat dysmorphia"</strong>'],
+['🪞','You start comparing yourself to a filtered version of YOU that doesn\'t exist'],
+['💔','Some filters make you look older, thinner, or more "perfect" — that\'s not enhancement, it\'s erasure'],
+['😄','Silly/fun filters (dog ears, rainbow vomit)? Go for it!'],
+['⚠️','Filters that change your actual features? Be careful how often you use them'],
+['❤️','If you feel "worse" without a filter — that\'s the filter\'s damage, not your face']
+])}<p style="margin-top:.8em;color:var(--accent);font-style:italic">"Your real face is the one people love, Elli."</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">😰</span><h2>FOMO — Fear of Missing Out</h2><p>That sinking feeling when everyone seems to be having fun without you.</p>${items([
+['📱','Seeing friends hang out without you on Snapchat or TikTok'],
+['🎉','Feeling like everyone\'s life is more exciting'],
+['😔','Checking your phone constantly for updates']
+])}<div class="callout green"><div class="callout-label tip">The Truth</div><p>FOMO is manufactured by social media. People only post when things look fun. JOMO (Joy of Missing Out) is a real thing — being happy with what YOU'RE doing right now.</p></div></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">😢</span><h2>Cyberbullying</h2><p>Bullying that happens through phones and online. It can look like:</p>${items([
+['💬','Mean messages, comments, or DMs'],
+['📸','Sharing embarrassing photos without permission'],
+['🚫','Deliberately excluding someone in group chats'],
+['👤','Creating fake accounts to harass someone'],
+['📢','Spreading rumors online'],
+['🔄','Screenshotting private conversations to embarrass someone']
+])}</div>`);
+
+S(`<div class="slide-inner"><h2>If You're Being Cyberbullied</h2>${items([
+['📸','<strong>Screenshot everything</strong> (evidence matters)'],
+['🚫','<strong>Don\'t respond</strong> (they want a reaction)'],
+['🔒','<strong>Block the person</strong>'],
+['🗣️','<strong>Tell a parent or trusted adult</strong>'],
+['📝','<strong>Report it</strong> on the platform']
+])}${callout('green','And If You See It Happening to Someone Else...','Don\'t be a bystander. Don\'t join in or share it. Stand up for them, or tell an adult. Being kind online takes courage — and it matters more than you know.')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">👥</span><h2>Group Chat Pressure</h2><p>Group chats can be fun — but they can also get weird fast.</p>${items([
+['🤐','Pressure to agree with the group or pile on someone'],
+['📸','Someone shares something inappropriate — now everyone\'s seen it'],
+['🚪','Being added to chats without permission'],
+['😬','Drama that spirals fast because everyone\'s watching'],
+['🗣️','People say things in groups they\'d never say 1-on-1']
+])}<h3 style="margin-top:.6em">What to do:</h3>${items([
+['🚪','You can LEAVE any group chat that makes you uncomfortable'],
+['🤫','You don\'t have to respond to everything'],
+['📸','If something crosses a line, screenshot and tell a parent'],
+['🔇','Mute chats that stress you out']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🔄</span><h2>The Dopamine Loop</h2><p>Here's why you can't stop scrolling:</p>${items([
+['🧪','Every like, comment, and new post gives your brain a tiny hit of <strong style="color:var(--accent)">dopamine</strong> (the "feel good" chemical)'],
+['🎰','Apps are designed like slot machines — you keep scrolling hoping for the next reward'],
+['📱','This is NOT an accident. Billions of dollars are spent making apps as addictive as possible'],
+['🧠','Knowing this gives you power over it']
+])}</div>`);
+
+S(`<div class="slide-inner"><h2>📉 Real Stats on Teens & Phones</h2>${items([
+['📊','Teens who spend 5+ hrs/day on social media are <strong style="color:var(--warn)">3x more likely</strong> to report depression'],
+['😴','<strong style="color:var(--warn)">70%</strong> of teens say social media makes them feel worse about their appearance'],
+['📱','<strong style="color:var(--warn)">1 in 3</strong> teens say they wish they could go back to life before social media'],
+['💚','BUT — teens who use phones for connection and creativity report <strong style="color:var(--accent2)">higher well-being</strong>']
+])}<p style="margin-top:.5em;color:var(--accent)">It's not about having a phone. It's about HOW you use it.</p></div>`);
+
+S(`<div class="slide-inner"><h2>🚦 Signs You Need a Phone Break</h2>${items([
+['😤','You feel anxious or upset after scrolling'],
+['🔄','You pick up your phone without thinking'],
+['😴','You\'re staying up late because of your phone'],
+['😔','You feel worse about yourself after social media'],
+['🤯','You can\'t focus on homework or conversations'],
+['📱','You feel panicky without your phone nearby']
+])}<p style="margin-top:.5em;color:var(--accent2)">Any of these? Time to take a break. Go outside, read a book, work on your writing, talk to someone IRL. 🌿</p></div>`);
+
+S(`<div class="slide-inner">${discuss("Elli, how do you feel after spending a long time on social media or TikTok? What could you do instead of scrolling when you're bored? Let's brainstorm 5 phone-free activities you enjoy.")}</div>`);
+
+// ===== MODULE 6: AI =====
+S(`<div class="slide-inner">${mod('Module 6 — AI')}<span class="big-emoji">🤖</span><h1>Navigating AI</h1><p>AI is powerful. Learn to use it wisely,<br>not blindly.</p></div>`);
+
+S(`<div class="slide-inner"><h2>🤖 What AI Is (and Isn't)</h2>${items([
+['✅','AI = software that can generate text, images, code, music, and more'],
+['✅','Examples: ChatGPT, Siri, Google Gemini, image generators, AI filters'],
+['❌','AI is NOT actually "thinking" or "understanding" — it\'s predicting patterns'],
+['❌','AI is NOT always right — it can sound very confident while being completely wrong'],
+['💡','AI is a <strong>tool</strong>, like a calculator. Great when used correctly, dangerous when trusted blindly.']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">⚠️</span><h2>AI Gets Things Wrong</h2><p>AI "hallucinations" are when AI confidently makes up information.</p>${callout('warn','Example','Ask ChatGPT for a list of sources for a school paper and it might invent fake books by real authors with convincing titles. If you turn that in without checking — that\'s on YOU.')}${items([
+['🔍','ALWAYS verify AI-generated information'],
+['📚','Use AI as a <strong>starting point</strong>, not the final answer'],
+['🧠','Your critical thinking is more valuable than any AI output']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">📝</span><h2>ChatGPT & Your Book</h2><p>Elli, you use ChatGPT to help with your writing, and that's <strong style="color:var(--accent2)">awesome!</strong> Using AI as a creative tool shows real initiative. But here are some important guidelines:</p>${items([
+['✅','Using it to brainstorm ideas, work through plot problems, or get unstuck — <strong style="color:var(--accent2)">great!</strong>'],
+['✅','Using it to check grammar or get feedback on a paragraph — <strong style="color:var(--accent2)">great!</strong>'],
+['⚠️','Don\'t let it write whole chapters FOR you — <strong style="color:var(--warn)">your voice is what makes your book special</strong>'],
+['🔍','Always fact-check anything it tells you — it makes stuff up with total confidence'],
+['🚫','<strong>Never share personal details</strong> with ChatGPT (your full name, address, school, family info)'],
+['💡','Anything you type into ChatGPT may be stored and used for training']
+])}${callout('tip','Remember','ChatGPT is a tool, not a replacement for YOUR creativity. The best parts of your book will always be the ideas and words that come from YOU. AI can help polish — but it can\'t replace your voice. ✨')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🎭</span><h2>Deepfakes & AI Images</h2><p>AI can now create <strong style="color:var(--warn)">fake photos, videos, and voices</strong> that look completely real.</p>${items([
+['📸','Fake photos of real people (including teens)'],
+['🗣️','Cloned voices that sound exactly like someone you know'],
+['📹','Fake videos of celebrities/politicians saying things they never said'],
+['🚫','NEVER create or share AI-generated images of real people without consent']
+])}${callout('warn','Important','If someone uses AI to create inappropriate images of you or someone you know — that is a CRIME. Tell a parent immediately.')}</div>`);
+
+S(`<div class="slide-inner"><h2>🎓 AI & School</h2>${items([
+['✅','Using AI to <strong>explain</strong> a concept you don\'t understand — great!'],
+['✅','Using AI to <strong>brainstorm</strong> ideas — great!'],
+['✅','Using AI to <strong>check your work</strong> — great!'],
+['❌','Copying AI-generated text as your own work — that\'s <strong style="color:var(--warn)">plagiarism</strong>'],
+['❌','Having AI do your homework for you — you\'re only cheating yourself'],
+['💡','Your teachers can often tell. And even if they can\'t — YOU know.']
+])}${callout('tip','Rule of Thumb','Use AI like a tutor, not a ghostwriter. If you can\'t explain it in your own words, you didn\'t learn it.')}</div>`);
+
+// --- CHARACTER.AI SECTION ---
+S(`<div class="slide-inner"><span class="big-emoji">⚠️</span><h2>Character.ai & AI Chatbot Apps</h2><p>Elli, let's talk about something specific. Apps like <strong style="color:var(--warn)">Character.ai</strong> let you create and chat with AI "characters" — fictional people, celebrities, etc.</p><p style="margin-top:.6em">These sound fun, but they can be <strong style="color:var(--warn)">genuinely dangerous</strong>:</p>${items([
+['🎭','Characters can discuss <strong>adult and inappropriate topics</strong> — the "safety filters" are weak and easily bypassed'],
+['🧠','Long conversations can start to feel like real relationships — but they\'re NOT real'],
+['💬','These apps can <strong>normalize unhealthy conversations</strong> that you\'d never have with a real person'],
+['😔','They can encourage emotional dependency on fictional characters'],
+['🚫','There is no real moderation — the AI will often go along with whatever direction a conversation takes']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">👏</span><h2>You Already Made the Right Call</h2><p>Elli, you tried Character.ai and <strong style="color:var(--accent2)">you deleted it</strong>. That was absolutely the right decision, and we're proud of you for recognizing it wasn't a good fit.</p>${callout('green','The Lesson','Just because an app is available in the App Store doesn\'t mean it\'s appropriate or safe. App stores don\'t do a great job of filtering what\'s actually suitable for teens.')}<p style="margin-top:.6em">Other similar apps to watch out for:</p>${items([
+['🚩','<strong>Character.ai</strong> — AI character roleplay'],
+['🚩','<strong>Chai</strong> — AI chat companions'],
+['🚩','<strong>Replika</strong> — AI "friend" / companion'],
+['🚩','<strong>Janitor AI</strong> — unfiltered AI characters'],
+['🚩','<strong>CrushOn.ai</strong> — explicitly designed for inappropriate AI chat']
+])}<p style="margin-top:.5em;color:var(--accent)">If an app lets you have uncensored conversations with AI characters — that's a red flag. 🚩</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🔐</span><h2>AI & Your Privacy</h2>${items([
+['🚫','Don\'t share personal info with AI chatbots (name, address, school)'],
+['🚫','Don\'t upload personal photos to AI tools'],
+['🚫','Don\'t share passwords or family info'],
+['💡','Anything you type into an AI may be stored and used for training'],
+['💡','Treat AI conversations like posting on a public billboard']
+])}</div>`);
+
+S(`<div class="slide-inner">${discuss("Elli, what did you notice about Character.ai that made you uncomfortable? How can you tell if an AI app is safe to use vs. one you should avoid? What makes ChatGPT different from Character.ai?")}</div>`);
+
+// ===== MODULE 7: ALGORITHM =====
+S(`<div class="slide-inner">${mod('Module 7 — Algorithms')}<span class="big-emoji">📊</span><h1>Outsmarting the Algorithm</h1><p>Your feed is not random.<br>It's engineered.</p></div>`);
+
+S(`<div class="slide-inner"><h2>🧮 How Algorithms Work</h2><p>Every app tracks what you do and shows you more of it:</p>${items([
+['👀','What you watch (and how long)'],
+['❤️','What you like, comment on, and share'],
+['🔍','What you search for'],
+['⏱️','Where you pause while scrolling'],
+['📍','Your location and time of day']
+])}<p style="margin-top:.5em">The goal? <strong style="color:var(--warn)">Keep you on the app as long as possible</strong> so they can show you more ads.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🎵</span><h2>TikTok's Algorithm: The Most Powerful One</h2><p>Elli, TikTok deserves a special callout because its algorithm is <strong style="color:var(--warn)">extremely powerful</strong>:</p>${items([
+['🧠','It learns what you like within <strong>minutes</strong> — faster than any other app'],
+['⏰','It\'s designed to be a <strong>massive time sink</strong> — "just 5 more minutes" becomes 2 hours'],
+['🕳️','<strong>Algorithm rabbit holes</strong> — it can pull you into increasingly extreme or upsetting content'],
+['📩','If your account isn\'t <strong>private</strong>, strangers can send you DMs — and predators use TikTok actively'],
+['⚠️','Dangerous trends go viral and pressure teens into risky behavior'],
+['🔒','<strong>Keep your account PRIVATE</strong>, set time limits, and be aware of what it\'s doing to your attention']
+])}${callout('rt','Real Talk','TikTok is fun. But it\'s also the app most likely to steal hours of your day without you even noticing. Set a daily time limit and stick to it.')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🔴</span><h2>YouTube: The Rabbit Hole Machine</h2><p>YouTube is amazing for learning and entertainment, but watch out for:</p>${items([
+['🕳️','<strong>Autoplay rabbit holes</strong> — one video leads to another, and suddenly it\'s 2 AM'],
+['💬','<strong>Comments section</strong> — can be toxic, hateful, or full of misinformation. Try to avoid reading comments.'],
+['🔞','<strong>Age-restricted content</strong> — exists for a reason; don\'t try to bypass age gates'],
+['📊','The algorithm <strong>wants you to keep watching</strong> — it\'ll recommend increasingly extreme content to keep you engaged'],
+['✅','<strong>Use it intentionally</strong> — search for what you want to learn, don\'t just let autoplay decide']
+])}${callout('tip','Pro Tip','Turn OFF autoplay. Search for specific things you want to watch. Use YouTube to learn and be inspired, not as a mindless scroll machine.')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🫧</span><h2>Filter Bubbles</h2><p>When algorithms only show you things you agree with, you end up in a <strong style="color:var(--accent)">bubble</strong>.</p>${items([
+['🔄','You only see one perspective on issues'],
+['🤝','You start to think "everyone" agrees with you'],
+['😡','Anyone who disagrees seems crazy or wrong'],
+['🌍','The real world is much more diverse than your feed']
+])}<p style="margin-top:.5em;color:var(--accent2)">Deliberately follow people with different viewpoints. It makes you smarter.</p></div>`);
+
+S(`<div class="slide-inner"><h2>🔍 Spotting Misinformation</h2>${items([
+['🤔','<strong>Check the source</strong> — who published this? Are they credible?'],
+['📅','<strong>Check the date</strong> — is this old news being recycled?'],
+['🔎','<strong>Read beyond the headline</strong> — articles often don\'t match their clickbait titles'],
+['📰','<strong>Cross-reference</strong> — do other reliable sources report the same thing?'],
+['😡','<strong>Check your emotions</strong> — if it makes you furious or terrified, that might be the point'],
+['🤷','<strong>When in doubt, don\'t share</strong> — spreading false info is almost as bad as creating it']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🎣</span><h2>Clickbait & Rage Bait</h2>${callout('warn','Clickbait','Headlines designed to make you click: "You won\'t BELIEVE what happened next!" "This one trick doctors HATE!" — The content almost never matches the hype.')}${callout('warn','Rage Bait','Content designed to make you angry so you engage: controversial takes, outrage posts, "hot takes." The algorithm LOVES anger because angry people comment more.')}<p style="margin-top:.5em;color:var(--accent)">When you feel manipulated — that's because you ARE being manipulated. Scroll past.</p></div>`);
+
+S(`<div class="slide-inner"><h2>🎨 Curate Your Feed</h2><p>You have more control than you think:</p>${items([
+['🚫','<strong>Unfollow/mute</strong> accounts that make you feel bad'],
+['🔍','<strong>Search for</strong> content that inspires, educates, or makes you laugh'],
+['⏱️','<strong>Engage with</strong> the good stuff — the algorithm will learn'],
+['❌','<strong>Use "Not Interested"</strong> on content you don\'t want'],
+['🌟','<strong>Follow creators</strong> who teach you something new']
+])}<p style="margin-top:.5em;color:var(--accent2)">YOUR feed should reflect the person you want to become, Elli.</p></div>`);
+
+S(`<div class="slide-inner">${discuss("Can you think of a time you saw something online that turned out to be false? How would you fact-check a wild claim you see on TikTok or YouTube?")}</div>`);
+
+// ===== MODULE 8: SOCIAL MEDIA =====
+S(`<div class="slide-inner">${mod('Module 8 — Social Media')}<span class="big-emoji">📱</span><h1>Social Media: The Real Talk</h1><p>It can be fun, creative, and connecting.<br>It can also be toxic, addictive, and dangerous.<br>The difference is how you use it.</p></div>`);
+
+S(`<div class="slide-inner"><h2>📋 Your Apps — The Honest Breakdown</h2><p style="margin-bottom:.5em">Let's go through the apps you actually use, Elli:</p>${items([
+['🎵','<strong>TikTok</strong> — Fun but the most addictive algorithm out there. Keep private, set time limits.'],
+['📌','<strong>Pinterest</strong> — Great for inspiration! Watch out for comparison traps.'],
+['🔴','<strong>YouTube</strong> — Amazing for learning. Beware autoplay rabbit holes.'],
+['🎬','<strong>CapCut</strong> — Creative and fun! Just be careful with what you share publicly.'],
+['🤖','<strong>ChatGPT</strong> — A great writing tool! Use it wisely (more on this in the AI module).']
+])}<p style="margin-top:.3em;color:var(--text-dim)">Age requirements exist for a reason. Respect them.</p></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🎬</span><h2>CapCut: Creative & Fun — With Caution</h2><p>Elli, CapCut is a great creative tool! Here's how to use it safely:</p>${items([
+['✅','Making videos for yourself and close friends — <strong style="color:var(--accent2)">awesome!</strong>'],
+['✅','Learning editing skills — this is a real, valuable skill!'],
+['⚠️','<strong>Don\'t include personal info</strong> in videos — no school name, address, location clues'],
+['⚠️','<strong>Be careful sharing publicly</strong> — once a video is out there, you can\'t take it back'],
+['🚫','<strong>Don\'t show your face + location</strong> together — this tells strangers exactly where to find you'],
+['💡','<strong>Watermark your work</strong> — if you share creations, make sure they\'re credited to you']
+])}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🔒</span><h2>ALWAYS Private</h2><p>Every single social media account should be set to <strong style="color:var(--accent2)">PRIVATE</strong>.</p>${items([
+['✅','Only approved followers can see your posts'],
+['✅','Strangers can\'t see your photos or info'],
+['✅','You control who\'s in your audience'],
+['❌','Public accounts = anyone in the world can see everything']
+])}<p style="margin-top:.5em;color:var(--accent)">This is non-negotiable, Elli. Private. Always.</p></div>`);
+
+S(`<div class="slide-inner"><h2>✅ What to Post / ❌ What NOT to Post</h2><div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;margin:.6em 0;max-width:650px"><div style="flex:1;min-width:250px;background:rgba(44,182,125,.1);border:1px solid var(--accent2);border-radius:12px;padding:16px;text-align:left"><h3 style="color:var(--accent2)">✅ OK</h3><p style="font-size:.95rem">Creative work, hobbies, CapCut edits, group photos (with permission), funny memes, achievements, positive vibes</p></div><div style="flex:1;min-width:250px;background:rgba(255,107,107,.1);border:1px solid var(--warn);border-radius:12px;padding:16px;text-align:left"><h3 style="color:var(--warn)">❌ NEVER</h3><p style="font-size:.95rem">Location/address, school uniform/logo, personal drama, anything you'd regret, other people's photos without asking, angry rants</p></div></div></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">📸</span><h2>Screenshots Are Forever</h2><p><strong style="color:var(--warn)">Disappearing messages don't really disappear.</strong></p>${items([
+['📱','Anyone can screenshot before it\'s gone'],
+['🔄','Screenshots get shared, saved, and forwarded'],
+['💬','Private conversations can become very public very fast'],
+['🤔','Before you send ANYTHING: assume it could be seen by everyone']
+])}${callout('rt','Real Talk','Every year, teens have their lives turned upside down because a "private" photo or message was screenshotted and shared. Once it\'s out there, you can\'t take it back. Ever.')}</div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">👵</span><h2>The Grandma Test</h2><div style="background:var(--surface);border-radius:16px;padding:24px;margin:.8em auto;max-width:500px"><p style="font-size:clamp(1.1rem,3vw,1.4rem);color:var(--text);font-weight:600">Before you post anything, ask:</p><p style="font-size:clamp(1.3rem,4vw,1.8rem);color:var(--accent);font-weight:700;margin-top:.5em">"Would I be comfortable showing this to Grandma?"</p><p style="margin-top:.5em;color:var(--text-dim)">If no → don't post it.<br>Simple as that. 😊</p></div></div>`);
+
+S(`<div class="slide-inner"><h2>⚡ Handling Online Drama</h2>${items([
+['🧊','<strong>Don\'t respond when you\'re angry</strong> — wait at least an hour'],
+['📵','<strong>Take it offline</strong> — real conflicts are better resolved face-to-face'],
+['🚫','<strong>Don\'t get involved</strong> in other people\'s drama'],
+['📸','<strong>Don\'t screenshot and share</strong> private arguments'],
+['🗣️','<strong>Talk to a parent</strong> if it\'s serious'],
+['💡','<strong>Remember:</strong> What you say online has real consequences for real people']
+])}</div>`);
+
+S(`<div class="slide-inner">${discuss("Elli, let's review your social media accounts together. Are they all set to private? What kind of content do you want to be known for posting?")}</div>`);
+
+// ===== MODULE 9: IMPROVE YOUR LIFE =====
+S(`<div class="slide-inner">${mod('Module 9 — Level Up')}<span class="big-emoji">🌟</span><h1>Using Your Phone to IMPROVE Your Life</h1><p>Your phone is an incredibly powerful tool.<br>Let's use it for good, Elli.</p></div>`);
+
+S(`<div class="slide-inner"><h2>🌟 The Good Stuff</h2>${items([
+['💬','<strong>Stay connected</strong> — text/call family and friends easily'],
+['📚','<strong>Learn anything</strong> — Khan Academy, YouTube tutorials, podcasts, Duolingo'],
+['🎨','<strong>Create</strong> — CapCut videos, writing with ChatGPT, Pinterest boards, music, art'],
+['📅','<strong>Stay organized</strong> — calendar, reminders, to-do lists, notes'],
+['🆘','<strong>Emergency help</strong> — always have a way to reach your parents or call 911'],
+['🗺️','<strong>Navigate</strong> — maps, transit, never get lost'],
+['🌍','<strong>Be a good digital citizen</strong> — spread kindness, support friends, share knowledge']
+])}</div>`);
+
+S(`<div class="slide-inner"><h2>📱 Recommended Apps to Start With</h2>${items([
+['📚','<strong>Learning:</strong> Khan Academy, Duolingo, Google Arts & Culture'],
+['🎨','<strong>Creativity:</strong> CapCut, Canva, GarageBand, Procreate'],
+['📅','<strong>Organization:</strong> Google Calendar, Notion, Reminders'],
+['🧘','<strong>Wellbeing:</strong> Headspace, Forest (focus timer)'],
+['📖','<strong>Reading:</strong> Kindle, Libby (free library books!)'],
+['🎵','<strong>Music:</strong> Spotify, Apple Music'],
+['✍️','<strong>Writing:</strong> ChatGPT (for brainstorming!), Google Docs']
+])}<p style="margin-top:.5em;color:var(--accent)">Fill your phone with tools that help you grow. 🌱</p></div>`);
+
+S(`<div class="slide-inner">${discuss("Elli, what are 3 ways you want to use your phone to improve your life? Let's set up those apps together!")}</div>`);
+
+// ===== MODULE 10: AGREEMENT & QUIZ =====
+S(`<div class="slide-inner">${mod('Module 10 — Final')}<span class="big-emoji">🏁</span><h1>Family Agreement & Quiz</h1><p>Almost there, Elli! Let's review what you've learned<br>and make it official.</p></div>`);
+
+S(`<div class="slide-inner"><h2>🔑 Key Takeaways</h2>${items([
+['⏰','You control your phone — set boundaries and stick to them'],
+['🛡️','Never share personal info with strangers online'],
+['🆘','If something feels wrong, tell a parent — NO EXCEPTIONS, no trouble'],
+['🔒','Privacy settings on, accounts private, passwords strong'],
+['🧠','Protect your mental health — take breaks when you need them'],
+['🤖','AI is a tool, not a substitute for your own thinking — and not all AI apps are safe'],
+['📊','The algorithm is designed to manipulate you — especially TikTok\'s'],
+['📱','Social media: private accounts, grandma test, think before you post'],
+['🔞','If you see explicit content, close it and tell a parent — no shame, no trouble'],
+['💚','Use your phone to connect, learn, create, and grow']
+])}</div>`);
+
+S(`<div class="slide-inner"><h2>📝 Quiz Time!</h2><p style="margin-bottom:.5em">Tap each question to reveal the answer.</p>
+${quiz(1,"Someone online says 'You're so mature for your age' and asks you to keep the friendship secret. What do you do?",["Keep the secret — they seem nice","Tell a parent immediately","Ask a friend for advice","Block them and forget about it"],1,"Tell a parent IMMEDIATELY. This is a classic grooming red flag. You will NOT be in trouble.")}
+${quiz(2,"What should ALL your social media accounts be set to?",["Public — so you can get more followers","Private","It doesn't matter","Whatever your friends use"],1,"ALWAYS private. You control who sees your content.")}
+</div>`);
+
+S(`<div class="slide-inner">
+${quiz(3,"A text says your Snapchat will be deleted unless you click a link. What do you do?",["Click the link quickly","Forward it to friends as a warning","Ignore it — it's a phishing scam","Reply asking for more info"],2,"This is a phishing scam. Real companies don't threaten you via random texts. Delete it.")}
+${quiz(4,"What's the 'Grandma Test'?",["Asking your grandma to check your phone","Only posting things you'd show your grandma","A TikTok trend","A phone setting"],1,"Before posting anything, ask: 'Would I be comfortable showing this to Grandma?' If no, don't post it.")}
+${quiz(5,"Why can't you stop scrolling TikTok?",["The content is just that good","The dopamine loop — apps are designed to be addictive","You have nothing better to do","Your phone is broken"],1,"Apps are engineered like slot machines to keep you engaged. TikTok's algorithm is the most powerful one out there — knowing about it gives you power over it.")}
+</div>`);
+
+S(`<div class="slide-inner">
+${quiz(6,"AI-generated homework answers are:",["A great shortcut","Plagiarism if submitted as your own work","Always accurate","Approved by teachers"],1,"Using AI to DO your work is plagiarism. Use it as a tutor, not a ghostwriter.")}
+${quiz(7,"'Disappearing' messages on Snapchat:",["Are truly gone forever","Can still be screenshotted and shared","Are encrypted and safe","Delete from all devices"],1,"Screenshots are forever. Never send anything in a 'disappearing' message that you wouldn't want the whole world to see.")}
+${quiz(8,"Why are apps like Character.ai dangerous?",["They cost too much money","Characters can discuss inappropriate topics and normalize unhealthy conversations","They use too much battery","They're boring"],1,"AI chatbot apps like Character.ai have weak safety filters and can expose you to inappropriate content and normalize unhealthy conversations.")}
+</div>`);
+
+S(`<div class="slide-inner">
+${quiz(9,"You accidentally see explicit content online. What do you do?",["Keep looking out of curiosity","Share it with friends","Close it immediately and tell a parent — no shame","Pretend it didn't happen"],2,"Close it immediately and tell a parent. You will NOT be in trouble. Accidentally seeing something is not your fault.")}
+${quiz(10,"You're using ChatGPT for a school project. What should you NOT do?",["Use it to brainstorm ideas","Ask it to explain a concept","Copy its entire output word-for-word as your own work","Use it to check your grammar"],2,"Using AI to DO your work is plagiarism. Use ChatGPT as a starting point and helper — but the work needs to be yours.")}
+${quiz(11,"The #1 rule if anything online makes you uncomfortable:",["Handle it yourself","Tell a parent — you will NOT be in trouble","Tell your best friend","Post about it"],1,"Tell a parent IMMEDIATELY. You will NEVER be in trouble for coming to us. We are always on your team. 💚")}
+</div>`);
+
+S(`<div class="slide-inner"><h2>📋 Our Family Phone Agreement</h2><p style="margin-bottom:.6em;color:var(--text-dim)">Elli, let's discuss each item together and check the boxes you agree on:</p><div class="agreement">
+<label><input type="checkbox"><span>I will keep my phone out of my bedroom at night and charge it in ___________</span></label>
+<label><input type="checkbox"><span>My social media accounts (TikTok, Pinterest, YouTube, etc.) will always be set to private</span></label>
+<label><input type="checkbox"><span>I will never share personal information with strangers online</span></label>
+<label><input type="checkbox"><span>If anything online makes me uncomfortable, I will tell Mom or Dad immediately — including explicit content</span></label>
+<label><input type="checkbox"><span>I understand my parents may check my phone — this is about safety, not distrust</span></label>
+<label><input type="checkbox"><span>I will follow our phone-free zones: meals, homework time, and ___________</span></label>
+<label><input type="checkbox"><span>I will not download apps without permission (especially AI chatbot apps)</span></label>
+<label><input type="checkbox"><span>I will use strong, unique passwords and never share them with friends</span></label>
+<label><input type="checkbox"><span>I will not share personal details in CapCut videos or any public content</span></label>
+<label><input type="checkbox"><span>Screen time limit: _____ hours per day on school days, _____ on weekends</span></label>
+<label><input type="checkbox"><span>I understand this agreement can be revisited as I show responsibility</span></label>
+</div></div>`);
+
+S(`<div class="slide-inner"><span class="big-emoji">🎉</span><h1>You Did It, Elli!</h1><p style="font-size:clamp(1.1rem,3vw,1.4rem);color:var(--text);margin-bottom:.5em">You're officially ready for your phone.</p><p>Remember: your parents are <strong style="color:var(--accent2)">always</strong> on your team. Having a phone is a privilege that grows with trust. You've got this! 💪📱</p><p style="margin-top:.8em;color:var(--text-dim)">We're so proud of the smart, responsible person you're becoming.</p><div style="margin-top:1.5em;font-size:1.2rem;color:var(--text-dim)">With all our love,<br><strong style="color:var(--text)">Mom & Dad ❤️</strong></div></div>`);
+
+// ===== RENDER ENGINE =====
+let current = 0;
+const deck = document.getElementById('deck');
+const bar = document.getElementById('progress');
+const numEl = document.getElementById('slide-num');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+
+// Build slides
+slides.forEach((html, i) => {
+  const div = document.createElement('div');
+  div.className = 'slide' + (i === 0 ? ' active' : '');
+  div.innerHTML = html;
+  deck.appendChild(div);
+});
+
+const allSlides = deck.querySelectorAll('.slide');
+const total = allSlides.length;
+
+function render() {
+  allSlides.forEach((s, i) => {
+    s.className = 'slide' + (i === current ? ' active' : i < current ? ' prev' : '');
+  });
+  bar.style.width = ((current + 1) / total * 100) + '%';
+  numEl.textContent = (current + 1) + ' / ' + total;
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === total - 1;
+}
+
+function go(dir) {
+  const next = current + dir;
+  if (next < 0 || next >= total) return;
+  current = next;
+  render();
+}
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+});
+
+// Touch/swipe
+let touchStartX = 0;
+deck.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+deck.addEventListener('touchend', e => {
+  const diff = touchStartX - e.changedTouches[0].screenX;
+  if (Math.abs(diff) > 50) go(diff > 0 ? 1 : -1);
+}, { passive: true });
+
+render();
+</script>
+</body>
+</html>
